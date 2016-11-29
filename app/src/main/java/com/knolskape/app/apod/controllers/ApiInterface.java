@@ -4,6 +4,7 @@ import com.knolskape.app.apod.models.DailyPicture;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
+import rx.Observable;
 
 /**
  * Created by Sai on 02-Nov-16.
@@ -12,5 +13,5 @@ import retrofit2.http.GET;
 public interface ApiInterface {
 
     @GET("planetary/apod")
-    public Call<DailyPicture> fetchAPOD();
+    public Observable<DailyPicture> fetchAPOD();
 }
