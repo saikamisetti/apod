@@ -1,16 +1,20 @@
 package com.knolskape.app.apod;
 
 import android.content.SharedPreferences;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.knolskape.app.apod.controllers.ApiInterface;
 import com.knolskape.app.apod.controllers.NetworkController;
 import com.knolskape.app.apod.models.DailyPicture;
+import com.knolskape.app.apod.storage.DbHelper;
 import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -20,6 +24,11 @@ import javax.inject.Inject;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import rx.Observable;
+import rx.Subscriber;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
      TextView title;
@@ -27,15 +36,17 @@ public class MainActivity extends AppCompatActivity {
      ImageView image;
 
     public String TAG = "MAIN_ACTIVITY";
-    private SharedPreferences sharedPreferences;
+    private DbHelper dbHelper;
     private String currentDate;
+
+    Subscription subscribe;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initializeViews();
-        sharedPreferences = getPreferences(MODE_PRIVATE);
+        dbHelper = new DbHelper(MainActivity.this);
         populateData();
     }
 
@@ -44,38 +55,60 @@ public class MainActivity extends AppCompatActivity {
         desc = (TextView) findViewById(R.id.desc);
         image = (ImageView) findViewById(R.id.image);
     }
+//    @Nullable
+//    private DailyPicture getDailyPicture() throws IOException{
+//
+//    }
 
     private void populateData() {
         Calendar c = Calendar.getInstance();
 
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         currentDate = df.format(c.getTime());
-        if(sharedPreferences.contains("date") && sharedPreferences.getString("date", "").equals(currentDate) )
+        if(dbHelper.getApodForDate(currentDate) != null )
         {
-            title.setText(sharedPreferences.getString("title", ""));
-            desc.setText(sharedPreferences.getString("desc", ""));
-            Picasso.with(MainActivity.this).load(sharedPreferences.getString("image","")).into(image);
+            DailyPicture dailyPicture = dbHelper.getApodForDate(currentDate);
+            title.setText(dailyPicture.title());
+            desc.setText(dailyPicture.explanation());
+            Picasso.with(MainActivity.this).load(dailyPicture.url()).into(image);
         } else {
-            NetworkController.getInstance().getApod(new Callback<DailyPicture>() {
-                @Override
-                public void onResponse(Call<DailyPicture> call, Response<DailyPicture> response) {
-                    Log.d(TAG, "received response : " + response.body());
-                    title.setText(response.body().title());
-                    desc.setText(response.body().explanation());
-                    Picasso.with(MainActivity.this).load(response.body().url()).into(image);
-                    SharedPreferences.Editor editor = sharedPreferences.edit(); //save data to shared prefs
-                    editor.putString("date", response.body().date());
-                    editor.putString("title", response.body().title());
-                    editor.putString("desc", response.body().explanation());
-                    editor.putString("image", response.body().url());
-                    editor.commit();
-                }
+            ApiInterface apiService = NetworkController.getClient().create(ApiInterface.class);
+            Observable<DailyPicture> apod = apiService.fetchAPOD();
+            subscribe = apod.subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Subscriber<DailyPicture>() {
+                        @Override
+                        public void onCompleted() {
 
-                @Override
-                public void onFailure(Call<DailyPicture> call, Throwable t) {
-                    Log.d(TAG, "api request failed ");
-                }
-            });
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+
+                        }
+
+                        @Override
+                        public void onNext(DailyPicture dailyPicture) {
+                            Log.d("onNext of Subscriber", dailyPicture.title());
+                            title.setText(dailyPicture.title());
+                            desc.setText(dailyPicture.explanation());
+                            Picasso.with(MainActivity.this).load(dailyPicture.url()).into(image);
+                          dbHelper.insertToDb(dailyPicture);
+                        }
+                    });
         }
+    }
+
+//    public Observable<DailyPicture> getDailyPictureObservable() {
+//        return
+//        return Observable.just(getDailyPicture());
+//    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+      if(subscribe != null && !subscribe.isUnsubscribed())
+        subscribe.unsubscribe();
     }
 }

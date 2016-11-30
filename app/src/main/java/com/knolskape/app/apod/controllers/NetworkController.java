@@ -3,7 +3,7 @@ package com.knolskape.app.apod.controllers;
 import android.util.Log;
 
 import com.google.gson.GsonBuilder;
-import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+//import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import com.knolskape.app.apod.models.DailyPicture;
 import com.ryanharter.auto.value.gson.AutoValueGsonTypeAdapterFactory;
 
@@ -20,8 +20,14 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
+import rx.Observable;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
 /**
  * Created by Sai on 02-Nov-16.
@@ -58,17 +64,6 @@ public class NetworkController {
                             return response;
                         }
                     }).build();
-//            client.interceptors().add(new Interceptor() {
-//                @Override
-//                public okhttp3.Response intercept(Chain chain) throws IOException {
-//                    Request request = chain.request();
-//                    HttpUrl url = request.url().newBuilder().addQueryParameter("api_key","DEMO_KEY").build();
-//                    request = request.newBuilder().url(url).build();
-//                    okhttp3.Response response = chain.proceed(request);
-//
-//                    return response;
-//                }
-//            });
             GsonConverterFactory gsonConverterFactory = GsonConverterFactory.create(
                     new GsonBuilder()
                             .registerTypeAdapterFactory(new AutoValueGsonTypeAdapterFactory())
@@ -77,16 +72,10 @@ public class NetworkController {
                     .baseUrl(BASE_URL)
                     .client(client)
                     .addConverterFactory(gsonConverterFactory)
-                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                    .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                     .build();
         }
         return retrofit;
-    }
-
-    public void getApod(Callback<DailyPicture> callback) {
-        ApiInterface apiService = NetworkController.getClient().create(ApiInterface.class);
-        Call<DailyPicture> call = apiService.fetchAPOD();
-        call.enqueue(callback);
     }
 
 }
