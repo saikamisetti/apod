@@ -15,24 +15,26 @@ import java.util.Calendar;
  * Created by knolly on 30/11/16.
  */
 
-public class DbHelper extends SQLiteOpenHelper{
-  private String TAG = "DB_HELPER";
+public class DbHelper extends SQLiteOpenHelper {
+  // If you change the database schema, you must increment the database version.
+  public static final int DATABASE_VERSION = 1;
+  public static final String DATABASE_NAME = "FeedReader.db";
   private static final String TEXT_TYPE = " TEXT";
   private static final String COMMA_SEP = ",";
   private static final String SQL_CREATE_ENTRIES =
-       "CREATE TABLE " + ApodContract.FeedEntry.TABLE_NAME + " (" +
-        ApodContract.FeedEntry._ID + " INTEGER PRIMARY KEY," +
-        ApodContract.FeedEntry.COLUMN_NAME_TITLE + TEXT_TYPE + COMMA_SEP +
-           ApodContract.FeedEntry.COLUMN_NAME_IMAGE + TEXT_TYPE + COMMA_SEP +
-           ApodContract.FeedEntry.COLUMN_NAME_DESC + TEXT_TYPE + COMMA_SEP +
-           ApodContract.FeedEntry.COLUMN_NAME_DATE + TEXT_TYPE + " )";
-
+      "CREATE TABLE " + ApodContract.FeedEntry.TABLE_NAME + " (" +
+          ApodContract.FeedEntry._ID + " INTEGER PRIMARY KEY," +
+          ApodContract.FeedEntry.COLUMN_NAME_TITLE + TEXT_TYPE + COMMA_SEP +
+          ApodContract.FeedEntry.COLUMN_NAME_IMAGE + TEXT_TYPE + COMMA_SEP +
+          ApodContract.FeedEntry.COLUMN_NAME_DESC + TEXT_TYPE + COMMA_SEP +
+          ApodContract.FeedEntry.COLUMN_NAME_DATE + TEXT_TYPE + " )";
   private static final String SQL_DELETE_ENTRIES =
-    "DROP TABLE IF EXISTS " + ApodContract.FeedEntry.TABLE_NAME;
+      "DROP TABLE IF EXISTS " + ApodContract.FeedEntry.TABLE_NAME;
+  private String TAG = "DB_HELPER";
 
-  // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 1;
-    public static final String DATABASE_NAME = "FeedReader.db";
+  public DbHelper(Context context) {
+    super(context, DATABASE_NAME, null, DATABASE_VERSION);
+  }
 
   @Override public void onCreate(SQLiteDatabase sqLiteDatabase) {
     Log.d(TAG, "creating the table");
@@ -42,10 +44,6 @@ public class DbHelper extends SQLiteOpenHelper{
   @Override public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
     sqLiteDatabase.execSQL(SQL_DELETE_ENTRIES);
     onCreate(sqLiteDatabase);
-  }
-
-  public DbHelper(Context context) {
-    super(context, DATABASE_NAME, null, DATABASE_VERSION);
   }
 
   public void insertToDb(DailyPicture dailyPicture) {
@@ -69,11 +67,13 @@ public class DbHelper extends SQLiteOpenHelper{
   public DailyPicture getApodForDate(String currentDate) {
     Log.d(TAG, "fetching record from db for date" + currentDate);
     SQLiteDatabase database = this.getReadableDatabase();
-    Cursor cursor = database.query(ApodContract.FeedEntry.TABLE_NAME, new String[]{ApodContract.FeedEntry.COLUMN_NAME_DATE,
-        ApodContract.FeedEntry.COLUMN_NAME_TITLE, ApodContract.FeedEntry.COLUMN_NAME_IMAGE,
-        ApodContract.FeedEntry.COLUMN_NAME_DESC}, ApodContract.FeedEntry.COLUMN_NAME_DATE + "= ?", new String[] {currentDate}, null, null, null);
+    final Cursor cursor = database.query(ApodContract.FeedEntry.TABLE_NAME, new String[] {
+            ApodContract.FeedEntry.COLUMN_NAME_DATE, ApodContract.FeedEntry.COLUMN_NAME_TITLE,
+            ApodContract.FeedEntry.COLUMN_NAME_IMAGE, ApodContract.FeedEntry.COLUMN_NAME_DESC
+        }, ApodContract.FeedEntry.COLUMN_NAME_DATE + "= ?", new String[] { currentDate }, null, null,
+        null);
     cursor.moveToFirst();
-    if(cursor.getCount() > 0) {
+    if (cursor.getCount() > 0) {
       DailyPicture dailyPicture = new DailyPicture() {
         @Nullable @Override public String copyright() {
           return null;
@@ -107,9 +107,9 @@ public class DbHelper extends SQLiteOpenHelper{
           return cursor.getString(cursor.getColumnIndex(ApodContract.FeedEntry.COLUMN_NAME_IMAGE));
         }
       };
-          return dailyPicture;
-    }
-    else
+      return dailyPicture;
+    } else {
       return null;
+    }
   }
 }
