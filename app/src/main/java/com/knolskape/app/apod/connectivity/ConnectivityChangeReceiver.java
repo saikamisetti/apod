@@ -14,7 +14,6 @@ public class ConnectivityChangeReceiver extends BroadcastReceiver {
   public static ConnectivityReceiverListener connectivityReceiverListener;
 
   @Override public void onReceive(Context context, Intent intent) {
-    Log.d("SAI TEST", "inside receiver");
     if (connectivityReceiverListener != null) {
       boolean isConnected = !Utils.isUserOffline(context);
       connectivityReceiverListener.onNetworkConnectionChanged(isConnected);

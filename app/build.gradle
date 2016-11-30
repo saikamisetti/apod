@@ -41,4 +41,7 @@ dependencies {
   testCompile 'junit:junit:4.12'
   compile 'io.reactivex:rxjava:1.1.6'
   compile 'io.reactivex:rxandroid:1.2.1'
+
+  //timber for logging
+  compile 'com.jakewharton.timber:timber:4.3.1'
 }

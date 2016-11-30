@@ -20,7 +20,6 @@ public class NetworkController {
   public static final String BASE_URL = "https://api.nasa.gov/";
   private static NetworkController instance;
   private static Retrofit retrofit = null;
-  public String TAG = "NETWORKCONTROLLER";
 
   private NetworkController() {
 

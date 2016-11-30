@@ -6,10 +6,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import com.knolskape.app.apod.models.DailyPicture;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import timber.log.Timber;
 
 /**
  * Created by knolly on 30/11/16.
@@ -37,7 +37,7 @@ public class DbHelper extends SQLiteOpenHelper {
   }
 
   @Override public void onCreate(SQLiteDatabase sqLiteDatabase) {
-    Log.d(TAG, "creating the table");
+    Timber.d("creating the table");
     sqLiteDatabase.execSQL(SQL_CREATE_ENTRIES);
   }
 
@@ -47,7 +47,7 @@ public class DbHelper extends SQLiteOpenHelper {
   }
 
   public void insertToDb(DailyPicture dailyPicture) {
-    Log.d(TAG, "inserting record to db " + dailyPicture);
+    Timber.d("inserting record to db " + dailyPicture);
     SQLiteDatabase db = this.getWritableDatabase();
 
     // Create a new map of values, where column names are the keys
@@ -65,7 +65,7 @@ public class DbHelper extends SQLiteOpenHelper {
   }
 
   public DailyPicture getApodForDate(String currentDate) {
-    Log.d(TAG, "fetching record from db for date" + currentDate);
+    Timber.d("fetching record from db for date" + currentDate);
     SQLiteDatabase database = this.getReadableDatabase();
     final Cursor cursor = database.query(ApodContract.FeedEntry.TABLE_NAME, new String[] {
             ApodContract.FeedEntry.COLUMN_NAME_DATE, ApodContract.FeedEntry.COLUMN_NAME_TITLE,
