@@ -9,7 +9,8 @@ import android.provider.BaseColumns;
 public class ApodContract {
   // To prevent someone from accidentally instantiating the contract class,
   // make the constructor private.
-  private ApodContract () {}
+  private ApodContract() {
+  }
 
   public static class FeedEntry implements BaseColumns {
     public static final String TABLE_NAME = "apod";
