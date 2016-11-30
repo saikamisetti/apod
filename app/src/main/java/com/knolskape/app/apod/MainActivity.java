@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.knolskape.app.apod.controllers.ApiInterface;
 import com.knolskape.app.apod.controllers.NetworkController;
 import com.knolskape.app.apod.models.DailyPicture;
+import com.knolskape.app.apod.storage.DbHelper;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -35,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
      ImageView image;
 
     public String TAG = "MAIN_ACTIVITY";
-    private SharedPreferences sharedPreferences;
+    private DbHelper dbHelper;
     private String currentDate;
 
     Subscription subscribe;
@@ -45,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initializeViews();
-        sharedPreferences = getPreferences(MODE_PRIVATE);
+        dbHelper = new DbHelper(MainActivity.this);
         populateData();
     }
 
@@ -64,11 +65,12 @@ public class MainActivity extends AppCompatActivity {
 
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         currentDate = df.format(c.getTime());
-        if(sharedPreferences.contains("date") && sharedPreferences.getString("date", "").equals(currentDate) )
+        if(dbHelper.getApodForDate(currentDate) != null )
         {
-            title.setText(sharedPreferences.getString("title", ""));
-            desc.setText(sharedPreferences.getString("desc", ""));
-            Picasso.with(MainActivity.this).load(sharedPreferences.getString("image","")).into(image);
+            DailyPicture dailyPicture = dbHelper.getApodForDate(currentDate);
+            title.setText(dailyPicture.title());
+            desc.setText(dailyPicture.explanation());
+            Picasso.with(MainActivity.this).load(dailyPicture.url()).into(image);
         } else {
             ApiInterface apiService = NetworkController.getClient().create(ApiInterface.class);
             Observable<DailyPicture> apod = apiService.fetchAPOD();
@@ -91,12 +93,7 @@ public class MainActivity extends AppCompatActivity {
                             title.setText(dailyPicture.title());
                             desc.setText(dailyPicture.explanation());
                             Picasso.with(MainActivity.this).load(dailyPicture.url()).into(image);
-                            SharedPreferences.Editor editor = sharedPreferences.edit(); //save data to shared prefs
-                            editor.putString("date", dailyPicture.date());
-                            editor.putString("title", dailyPicture.title());
-                            editor.putString("desc", dailyPicture.explanation());
-                            editor.putString("image", dailyPicture.url());
-                            editor.commit();
+                          dbHelper.insertToDb(dailyPicture);
                         }
                     });
         }
@@ -111,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+      if(subscribe != null && !subscribe.isUnsubscribed())
         subscribe.unsubscribe();
     }
 }
