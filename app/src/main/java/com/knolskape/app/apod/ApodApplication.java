@@ -25,9 +25,4 @@ public class ApodApplication extends Application {
       }
     });
   }
-
-  public void setConnectivityListener(
-      ConnectivityChangeReceiver.ConnectivityReceiverListener listener) {
-    ConnectivityChangeReceiver.connectivityReceiverListener = listener;
-  }
 }

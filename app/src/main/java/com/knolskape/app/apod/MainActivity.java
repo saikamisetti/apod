@@ -7,7 +7,10 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.facebook.network.connectionclass.ConnectionClassManager;
+import com.facebook.network.connectionclass.ConnectionQuality;
 import com.knolskape.app.apod.connectivity.ConnectivityChangeReceiver;
+import com.knolskape.app.apod.connectivity.NetworkUtils;
 import com.knolskape.app.apod.controllers.ApiInterface;
 import com.knolskape.app.apod.controllers.NetworkController;
 import com.knolskape.app.apod.models.DailyPicture;
@@ -23,8 +26,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity
-    implements ConnectivityChangeReceiver.ConnectivityReceiverListener {
+public class MainActivity extends AppCompatActivity{
   TextView title;
   TextView desc;
   ImageView image;
@@ -32,10 +34,18 @@ public class MainActivity extends AppCompatActivity
   private DbHelper dbHelper;
   private String currentDate;
 
+  private ConnectionClassManager.ConnectionClassStateChangeListener connectionClassStateChangeListener;
+
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     initializeViews();
+    connectionClassStateChangeListener = new ConnectionClassManager.ConnectionClassStateChangeListener() {
+      @Override public void onBandwidthStateChange(ConnectionQuality bandwidthState) {
+        if(currentDate == null || !currentDate.equals(dbHelper.getApodForDate(currentDate).date())) //if no db data or if db is not updated, make an api call
+          fetchApodFromNetwork();
+      }
+    };
     dbHelper = new DbHelper(MainActivity.this);
     populateData();
   }
@@ -48,10 +58,9 @@ public class MainActivity extends AppCompatActivity
 
   private void populateData() {
     Calendar c = Calendar.getInstance();
-
     SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
     currentDate = df.format(c.getTime());
-    if (dbHelper.getApodForDate(currentDate) != null) {
+    if (dbHelper.getApodForDate(currentDate) != null && dbHelper.getApodForDate(currentDate).date().equals(currentDate)) {
       DailyPicture dailyPicture = dbHelper.getApodForDate(currentDate);
       title.setText(dailyPicture.title());
       desc.setText(dailyPicture.explanation());
@@ -99,15 +108,12 @@ public class MainActivity extends AppCompatActivity
   @Override protected void onDestroy() {
     super.onDestroy();
     if (subscribe != null && !subscribe.isUnsubscribed()) subscribe.unsubscribe();
-  }
-
-  @Override public void onNetworkConnectionChanged(boolean isConnected) {
-    fetchApodFromNetwork();
+    NetworkUtils.unwatchConnection(connectionClassStateChangeListener);
   }
 
   @Override protected void onResume() {
     super.onResume();
     // register connection status listener
-    ApodApplication.getInstance().setConnectivityListener(this);
+    NetworkUtils.watchConnection(connectionClassStateChangeListener);
   }
 }
