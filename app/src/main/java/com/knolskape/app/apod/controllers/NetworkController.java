@@ -1,7 +1,6 @@
 package com.knolskape.app.apod.controllers;
 
-import com.google.gson.GsonBuilder;
-import com.ryanharter.auto.value.gson.AutoValueGsonTypeAdapterFactory;
+import com.squareup.moshi.Moshi;
 import java.io.IOException;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
@@ -9,7 +8,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
-import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.moshi.MoshiConverterFactory;
 
 /**
  * Created by Sai on 02-Nov-16.
@@ -42,12 +41,12 @@ public class NetworkController {
           return response;
         }
       }).build();
-      GsonConverterFactory gsonConverterFactory = GsonConverterFactory.create(
-          new GsonBuilder().registerTypeAdapterFactory(new AutoValueGsonTypeAdapterFactory())
-              .create());
+
+      Moshi moshi = new Moshi.Builder().add(DailyPictureMoshiAdapterFactory.create()).build();
+      MoshiConverterFactory moshiConverterFactory = MoshiConverterFactory.create(moshi);
       retrofit = new Retrofit.Builder().baseUrl(BASE_URL)
           .client(client)
-          .addConverterFactory(gsonConverterFactory)
+          .addConverterFactory(moshiConverterFactory)
           .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
           .build();
     }

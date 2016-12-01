@@ -2,8 +2,8 @@ package com.knolskape.app.apod.models;
 
 import android.support.annotation.Nullable;
 import com.google.auto.value.AutoValue;
-import com.google.gson.Gson;
-import com.google.gson.TypeAdapter;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
 
 /**
  * Created by Sai on 02-Nov-16.
@@ -11,8 +11,8 @@ import com.google.gson.TypeAdapter;
 
 @AutoValue public abstract class DailyPicture {
 
-  public static TypeAdapter<DailyPicture> typeAdapter(Gson gson) {
-    return new AutoValue_DailyPicture.GsonTypeAdapter(gson);
+  public static JsonAdapter<DailyPicture> typeAdapter(Moshi moshi) {
+    return new AutoValue_DailyPicture.MoshiJsonAdapter(moshi);
   }
 
   @Nullable public abstract String copyright();
