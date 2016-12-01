@@ -18,6 +18,22 @@ android {
       proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
     }
   }
+
+  productFlavors {
+    dev {
+      applicationId "com.knolskape.app.apod.dev"
+      manifestPlaceholders = [manifestApplicationId: "${applicationId}"]
+    }
+
+    staging {
+      applicationId "com.knolskape.app.apod.staging"
+      manifestPlaceholders = [manifestApplicationId: "${applicationId}"]
+    }
+
+    product {
+      applicationId "com.knolskape.app.apod"
+    }
+  }
 }
 
 dependencies {
