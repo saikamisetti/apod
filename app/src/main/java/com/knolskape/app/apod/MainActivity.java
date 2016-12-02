@@ -1,15 +1,11 @@
 package com.knolskape.app.apod;
 
-import android.content.BroadcastReceiver;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.facebook.network.connectionclass.ConnectionClassManager;
 import com.facebook.network.connectionclass.ConnectionQuality;
-import com.knolskape.app.apod.connectivity.ConnectivityChangeReceiver;
 import com.knolskape.app.apod.connectivity.NetworkUtils;
 import com.knolskape.app.apod.controllers.ApiInterface;
 import com.knolskape.app.apod.controllers.NetworkController;
@@ -26,7 +22,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity {
   TextView title;
   TextView desc;
   ImageView image;
@@ -34,18 +30,31 @@ public class MainActivity extends AppCompatActivity{
   private DbHelper dbHelper;
   private String currentDate;
 
-  private ConnectionClassManager.ConnectionClassStateChangeListener connectionClassStateChangeListener;
+  private NetworkUtils.ConnectionStateChangeListener connectionClassStateChangeListener;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     initializeViews();
-    connectionClassStateChangeListener = new ConnectionClassManager.ConnectionClassStateChangeListener() {
-      @Override public void onBandwidthStateChange(ConnectionQuality bandwidthState) {
-        if(currentDate == null || !currentDate.equals(dbHelper.getApodForDate(currentDate).date())) //if no db data or if db is not updated, make an api call
+
+    connectionClassStateChangeListener = new NetworkUtils.ConnectionStateChangeListener() {
+      @Override public void onConnectionRevoked() {
+
+      }
+
+      @Override public void onConnectionRestored() {
+        //if no db data or if db is not updated, make an api call
+        if (currentDate == null || !currentDate.equals(
+            dbHelper.getApodForDate(currentDate).date())) {
           fetchApodFromNetwork();
+        }
+      }
+
+      @Override public void onBandwidthStateChange(ConnectionQuality bandwidthState) {
+
       }
     };
+
     dbHelper = new DbHelper(MainActivity.this);
     populateData();
   }
@@ -60,7 +69,9 @@ public class MainActivity extends AppCompatActivity{
     Calendar c = Calendar.getInstance();
     SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
     currentDate = df.format(c.getTime());
-    if (dbHelper.getApodForDate(currentDate) != null && dbHelper.getApodForDate(currentDate).date().equals(currentDate)) {
+    if (dbHelper.getApodForDate(currentDate) != null && dbHelper.getApodForDate(currentDate)
+        .date()
+        .equals(currentDate)) {
       DailyPicture dailyPicture = dbHelper.getApodForDate(currentDate);
       title.setText(dailyPicture.title());
       desc.setText(dailyPicture.explanation());
