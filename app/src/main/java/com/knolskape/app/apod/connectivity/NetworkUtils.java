@@ -4,7 +4,6 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import com.facebook.network.connectionclass.ConnectionClassManager;
 import com.facebook.network.connectionclass.ConnectionQuality;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 /**
@@ -13,10 +12,8 @@ import java.util.ArrayList;
 
 public class NetworkUtils {
 
-  private static final WeakReference<ArrayList<ConnectionStateChangeListener>>
-      connectionClassStateChangeListeners =
-      new WeakReference<ArrayList<ConnectionStateChangeListener>>(
-          new ArrayList<ConnectionStateChangeListener>());
+  private static final ArrayList<ConnectionStateChangeListener>
+      connectionClassStateChangeListeners = new ArrayList<ConnectionStateChangeListener>();
 
   /**
    * Check is device is connected to Internet.
@@ -51,26 +48,26 @@ public class NetworkUtils {
 
   public static void watchConnection(ConnectionStateChangeListener listener) {
     if (listener != null) {
-      connectionClassStateChangeListeners.get().add(listener);
+      connectionClassStateChangeListeners.add(listener);
       ConnectionClassManager.getInstance().register(listener);
     }
   }
 
   public static void unwatchConnection(ConnectionStateChangeListener listener) {
     if (listener != null) {
-      connectionClassStateChangeListeners.get().remove(listener);
+      connectionClassStateChangeListeners.remove(listener);
       ConnectionClassManager.getInstance().remove(listener);
     }
   }
 
   private static void notifyConnectionRevoked() {
-    for (ConnectionStateChangeListener changeListener : connectionClassStateChangeListeners.get()) {
+    for (ConnectionStateChangeListener changeListener : connectionClassStateChangeListeners) {
       changeListener.onConnectionRevoked();
     }
   }
 
   private static void notifyConnectionRestored() {
-    for (ConnectionStateChangeListener changeListener : connectionClassStateChangeListeners.get()) {
+    for (ConnectionStateChangeListener changeListener : connectionClassStateChangeListeners) {
       changeListener.onConnectionRestored();
     }
   }
