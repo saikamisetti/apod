@@ -1,11 +1,10 @@
 package com.knolskape.app.apod;
 
-import android.content.BroadcastReceiver;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.widget.Toast;
 import com.knolskape.app.apod.connectivity.ConnectivityChangeReceiver;
 import com.knolskape.app.apod.controllers.ApiInterface;
@@ -13,9 +12,10 @@ import com.knolskape.app.apod.controllers.NetworkController;
 import com.knolskape.app.apod.models.DailyPicture;
 import com.knolskape.app.apod.storage.DbHelper;
 import com.knolskape.app.apod.utils.Utils;
-import com.squareup.picasso.Picasso;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
@@ -25,25 +25,31 @@ import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity
     implements ConnectivityChangeReceiver.ConnectivityReceiverListener {
-  TextView title;
-  TextView desc;
-  ImageView image;
+  RecyclerView rv_images;
+  RecyclerView.LayoutManager layoutManager;
+
+  ImagesAdapter adapter;
   Subscription subscribe;
   private DbHelper dbHelper;
   private String currentDate;
+  private List<DailyPicture> dailyPictures = new ArrayList<>();
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     initializeViews();
+    adapter = new ImagesAdapter(MainActivity.this, dailyPictures);
+    rv_images.setAdapter(adapter);
     dbHelper = new DbHelper(MainActivity.this);
+
     populateData();
   }
 
   private void initializeViews() {
-    title = (TextView) findViewById(R.id.title);
-    desc = (TextView) findViewById(R.id.desc);
-    image = (ImageView) findViewById(R.id.image);
+    rv_images = (RecyclerView) findViewById(R.id.rv_images);
+    rv_images.setHasFixedSize(true);
+    layoutManager = new GridLayoutManager(this, 2);
+    rv_images.setLayoutManager(layoutManager);
   }
 
   private void populateData() {
@@ -51,13 +57,19 @@ public class MainActivity extends AppCompatActivity
 
     SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
     currentDate = df.format(c.getTime());
-    if (dbHelper.getApodForDate(currentDate) != null) {
-      DailyPicture dailyPicture = dbHelper.getApodForDate(currentDate);
-      title.setText(dailyPicture.title());
-      desc.setText(dailyPicture.explanation());
-      Picasso.with(MainActivity.this).load(dailyPicture.url()).into(image);
-    } else {
+    DailyPicture dbLatestDailyPicture = dbHelper.getLatestApodForDate(currentDate);
+    dailyPictures.clear();
+    if (dbLatestDailyPicture == null) {
+      Timber.d("empty db; making api call");
       fetchApodFromNetwork();
+    } else { //db is up to date
+      Timber.d("db is not empty");
+      dailyPictures.addAll(dbHelper.fetchAllPics());
+      adapter.notifyDataSetChanged();
+      if(!dbLatestDailyPicture.date().equals(currentDate)) {
+        Timber.d("making extra api call");
+        fetchApodFromNetwork();
+      }
     }
   }
 
@@ -85,12 +97,9 @@ public class MainActivity extends AppCompatActivity
 
             @Override public void onNext(DailyPicture dailyPicture) {
               Timber.d("onNext of Subscriber", dailyPicture.title());
-              title.setText(dailyPicture.title());
-              desc.setText(dailyPicture.explanation());
-              title.setText(dailyPicture.title());
-              desc.setText(dailyPicture.explanation());
-              Picasso.with(MainActivity.this).load(dailyPicture.url()).into(image);
               dbHelper.insertToDb(dailyPicture);
+              dailyPictures.add(0, dailyPicture);
+              adapter.notifyDataSetChanged();
             }
           });
     }

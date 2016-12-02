@@ -19,6 +19,10 @@
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
     </activity>
+    <activity
+        android:name=".ImageDetailActivity"
+        android:screenOrientation="portrait"/>
+
     <receiver android:name=".connectivity.ConnectivityChangeReceiver">
       <intent-filter>
         <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
