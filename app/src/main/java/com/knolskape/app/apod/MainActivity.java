@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
     connectionClassStateChangeListener = new NetworkUtils.ConnectionStateChangeListener() {
       @Override public void onConnectionRevoked() {
-
+        Timber.d("onConnectionRevoked: ");
       }
 
       @Override public void onConnectionRestored() {
@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
       }
 
       @Override public void onBandwidthStateChange(ConnectionQuality bandwidthState) {
-
+        Timber.d("onBandwidthStateChange: %s", bandwidthState);
       }
     };
 

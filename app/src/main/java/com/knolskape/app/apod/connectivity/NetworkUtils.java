@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import com.facebook.network.connectionclass.ConnectionClassManager;
 import com.facebook.network.connectionclass.ConnectionQuality;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 /**
@@ -12,8 +13,9 @@ import java.util.ArrayList;
 
 public class NetworkUtils {
 
-  private static final ArrayList<ConnectionStateChangeListener>
-      connectionClassStateChangeListeners = new ArrayList<ConnectionStateChangeListener>();
+  private static final ArrayList<WeakReference<ConnectionStateChangeListener>>
+      connectionClassStateChangeListeners =
+      new ArrayList<WeakReference<ConnectionStateChangeListener>>();
 
   /**
    * Check is device is connected to Internet.
@@ -48,27 +50,33 @@ public class NetworkUtils {
 
   public static void watchConnection(ConnectionStateChangeListener listener) {
     if (listener != null) {
-      connectionClassStateChangeListeners.add(listener);
+      connectionClassStateChangeListeners.add(
+          new WeakReference<ConnectionStateChangeListener>(listener));
       ConnectionClassManager.getInstance().register(listener);
     }
   }
 
   public static void unwatchConnection(ConnectionStateChangeListener listener) {
     if (listener != null) {
-      connectionClassStateChangeListeners.remove(listener);
+      for (WeakReference<ConnectionStateChangeListener> weakListener : connectionClassStateChangeListeners) {
+        if (weakListener.get().equals(listener)) {
+          connectionClassStateChangeListeners.remove(weakListener);
+          break;
+        }
+      }
       ConnectionClassManager.getInstance().remove(listener);
     }
   }
 
   private static void notifyConnectionRevoked() {
-    for (ConnectionStateChangeListener changeListener : connectionClassStateChangeListeners) {
-      changeListener.onConnectionRevoked();
+    for (WeakReference<ConnectionStateChangeListener> weakListener : connectionClassStateChangeListeners) {
+      weakListener.get().onConnectionRevoked();
     }
   }
 
   private static void notifyConnectionRestored() {
-    for (ConnectionStateChangeListener changeListener : connectionClassStateChangeListeners) {
-      changeListener.onConnectionRestored();
+    for (WeakReference<ConnectionStateChangeListener> weakListener : connectionClassStateChangeListeners) {
+      weakListener.get().onConnectionRestored();
     }
   }
 
