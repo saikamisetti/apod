@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity
           .observeOn(AndroidSchedulers.mainThread())
           .subscribe(new Subscriber<DailyPicture>() {
             @Override public void onCompleted() {
-
+              adapter.notifyDataSetChanged();
             }
 
             @Override public void onError(Throwable e) {
@@ -93,13 +93,13 @@ public class MainActivity extends AppCompatActivity
                   "There has been an error on the server. Please try again later.",
                   Toast.LENGTH_SHORT).show();
               Timber.e(e);
+              adapter.notifyDataSetChanged();
             }
 
             @Override public void onNext(DailyPicture dailyPicture) {
               Timber.d("onNext of Subscriber", dailyPicture.title());
               dbHelper.insertToDb(dailyPicture);
               dailyPictures.add(0, dailyPicture);
-              adapter.notifyDataSetChanged();
             }
           });
     }

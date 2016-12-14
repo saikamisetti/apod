@@ -43,7 +43,7 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ViewHolder
       @Override public void onClick(View view) {
         Intent intent = new Intent(context, ImageDetailActivity.class);
         // Pass data object in the bundle and populate details activity.
-        intent.putExtra(ImageDetailActivity.IMAGE_URL, imagesList.get(position).url());
+        intent.putExtra(ImageDetailActivity.IMAGE_URL, imagesList.get(position).hdurl());
         ActivityOptionsCompat options = ActivityOptionsCompat.
             makeSceneTransitionAnimation((Activity) context, holder.imageView, "detail");
         context.startActivity(intent, options.toBundle());

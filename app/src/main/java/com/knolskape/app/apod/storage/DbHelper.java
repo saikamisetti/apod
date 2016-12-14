@@ -19,7 +19,7 @@ import timber.log.Timber;
 
 public class DbHelper extends SQLiteOpenHelper {
   // If you change the database schema, you must increment the database version.
-  public static final int DATABASE_VERSION = 3;
+  public static final int DATABASE_VERSION = 4;
   public static final String DATABASE_NAME = "FeedReader.db";
   private static final String TEXT_TYPE = " TEXT";
   private static final String COMMA_SEP = ",";
@@ -28,6 +28,7 @@ public class DbHelper extends SQLiteOpenHelper {
           ApodContract.FeedEntry._ID + " INTEGER PRIMARY KEY," +
           ApodContract.FeedEntry.COLUMN_NAME_TITLE + TEXT_TYPE + COMMA_SEP +
           ApodContract.FeedEntry.COLUMN_NAME_IMAGE + TEXT_TYPE + COMMA_SEP +
+          ApodContract.FeedEntry.COLUMN_NAME_IMAGE_HD + TEXT_TYPE + COMMA_SEP +
           ApodContract.FeedEntry.COLUMN_NAME_DESC + TEXT_TYPE + COMMA_SEP +
           ApodContract.FeedEntry.COLUMN_NAME_DATE + TEXT_TYPE + " )";
   private static final String SQL_DELETE_ENTRIES =
@@ -60,6 +61,7 @@ public class DbHelper extends SQLiteOpenHelper {
     String currentDate = df.format(c.getTime());
     values.put(ApodContract.FeedEntry.COLUMN_NAME_DATE, currentDate);
     values.put(ApodContract.FeedEntry.COLUMN_NAME_IMAGE, dailyPicture.url());
+    values.put(ApodContract.FeedEntry.COLUMN_NAME_IMAGE_HD, dailyPicture.hdurl());
 
     // Insert the new row, returning the primary key value of the new row
     db.insert(ApodContract.FeedEntry.TABLE_NAME, null, values);
@@ -69,13 +71,13 @@ public class DbHelper extends SQLiteOpenHelper {
     Timber.d("fetching all pics saved in db so far");
     SQLiteDatabase db = this.getReadableDatabase();
     final Cursor cursor = db.query(ApodContract.FeedEntry.TABLE_NAME, new String[] {
-            ApodContract.FeedEntry.COLUMN_NAME_DATE, ApodContract.FeedEntry.COLUMN_NAME_TITLE,
-            ApodContract.FeedEntry.COLUMN_NAME_IMAGE, ApodContract.FeedEntry.COLUMN_NAME_DESC
-        }, null, null, null, null,
-        ApodContract.FeedEntry.COLUMN_NAME_DATE + " DESC");
+        ApodContract.FeedEntry.COLUMN_NAME_DATE, ApodContract.FeedEntry.COLUMN_NAME_TITLE,
+        ApodContract.FeedEntry.COLUMN_NAME_IMAGE, ApodContract.FeedEntry.COLUMN_NAME_DESC,
+        ApodContract.FeedEntry.COLUMN_NAME_IMAGE_HD
+    }, null, null, null, null, ApodContract.FeedEntry.COLUMN_NAME_DATE + " DESC");
     cursor.moveToFirst();
     List<DailyPicture> dailyPictures = new ArrayList<>();
-    if(cursor.getCount() > 0) {
+    if (cursor.getCount() > 0) {
       DailyPicture dailyPicture = new DailyPicture() {
         @Nullable @Override public String copyright() {
           return null;
@@ -90,7 +92,8 @@ public class DbHelper extends SQLiteOpenHelper {
         }
 
         @Nullable @Override public String hdurl() {
-          return null;
+          return cursor.getString(
+              cursor.getColumnIndex(ApodContract.FeedEntry.COLUMN_NAME_IMAGE_HD));
         }
 
         @Nullable @Override public String mediaType() {
@@ -119,7 +122,8 @@ public class DbHelper extends SQLiteOpenHelper {
     SQLiteDatabase database = this.getReadableDatabase();
     final Cursor cursor = database.query(ApodContract.FeedEntry.TABLE_NAME, new String[] {
             ApodContract.FeedEntry.COLUMN_NAME_DATE, ApodContract.FeedEntry.COLUMN_NAME_TITLE,
-            ApodContract.FeedEntry.COLUMN_NAME_IMAGE, ApodContract.FeedEntry.COLUMN_NAME_DESC
+            ApodContract.FeedEntry.COLUMN_NAME_IMAGE, ApodContract.FeedEntry.COLUMN_NAME_DESC,
+            ApodContract.FeedEntry.COLUMN_NAME_IMAGE_HD
         }, ApodContract.FeedEntry.COLUMN_NAME_DATE + "= ?", new String[] { currentDate }, null, null,
         ApodContract.FeedEntry.COLUMN_NAME_DATE + " DESC");
     cursor.moveToFirst();
@@ -138,7 +142,8 @@ public class DbHelper extends SQLiteOpenHelper {
         }
 
         @Nullable @Override public String hdurl() {
-          return null;
+          return cursor.getString(
+              cursor.getColumnIndex(ApodContract.FeedEntry.COLUMN_NAME_IMAGE_HD));
         }
 
         @Nullable @Override public String mediaType() {
