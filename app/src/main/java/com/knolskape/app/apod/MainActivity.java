@@ -3,7 +3,6 @@ package com.knolskape.app.apod;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.widget.Toast;
 import com.knolskape.app.apod.connectivity.ConnectivityChangeReceiver;
@@ -66,7 +65,7 @@ public class MainActivity extends AppCompatActivity
       Timber.d("db is not empty");
       dailyPictures.addAll(dbHelper.fetchAllPics());
       adapter.notifyDataSetChanged();
-      if(!dbLatestDailyPicture.date().equals(currentDate)) {
+      if (!dbLatestDailyPicture.date().equals(currentDate)) {
         Timber.d("making extra api call");
         fetchApodFromNetwork();
       }
@@ -80,8 +79,8 @@ public class MainActivity extends AppCompatActivity
       Timber.d("user is offline");
     } else {
       ApiInterface apiService = NetworkController.getClient().create(ApiInterface.class);
-      Observable<DailyPicture> apod = apiService.fetchAPOD();
-      subscribe = apod.subscribeOn(Schedulers.newThread())
+      subscribe = apiService.fetchAPOD()
+          .subscribeOn(Schedulers.newThread())
           .observeOn(AndroidSchedulers.mainThread())
           .subscribe(new Subscriber<DailyPicture>() {
             @Override public void onCompleted() {
