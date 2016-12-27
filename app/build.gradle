@@ -29,7 +29,6 @@ dependencies {
   compile 'com.squareup.picasso:picasso:2.5.2'
   compile 'com.squareup.retrofit2:retrofit:2.1.0'
   compile 'com.squareup.retrofit2:adapter-rxjava:2.0.2'
-  compile 'com.squareup.retrofit2:converter-gson:2.0.2'
   compile 'com.squareup.okhttp3:okhttp:3.4.1'
   apt 'com.squareup:javapoet:1.7.0'
   compile 'com.google.dagger:dagger:2.7'
@@ -37,8 +36,13 @@ dependencies {
   provided "com.google.auto.value:auto-value:1.2"
   apt "com.google.auto.value:auto-value:1.2"
   provided 'com.jakewharton.auto.value:auto-value-annotations:1.2-update1'
-  apt 'com.ryanharter.auto.value:auto-value-gson:0.3.1'
+  compile 'com.squareup.retrofit2:converter-moshi:2.1.0'
+  apt 'com.ryanharter.auto.value:auto-value-moshi:0.4.2'
+  provided 'com.ryanharter.auto.value:auto-value-moshi-annotations:0.4.2'
   testCompile 'junit:junit:4.12'
   compile 'io.reactivex:rxjava:1.1.6'
   compile 'io.reactivex:rxandroid:1.2.1'
+
+  //timber for logging
+  compile 'com.jakewharton.timber:timber:4.3.1'
 }

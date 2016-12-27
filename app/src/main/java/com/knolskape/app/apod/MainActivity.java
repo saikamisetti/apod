@@ -21,15 +21,14 @@ import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity
     implements ConnectivityChangeReceiver.ConnectivityReceiverListener {
-  public String TAG = "MAIN_ACTIVITY";
   TextView title;
   TextView desc;
   ImageView image;
   Subscription subscribe;
-  BroadcastReceiver connectivityBroadcastReceiver;
   private DbHelper dbHelper;
   private String currentDate;
 
@@ -66,7 +65,7 @@ public class MainActivity extends AppCompatActivity
     if (Utils.isUserOffline(MainActivity.this)) {
       Toast.makeText(this, "Please ensure you are online to proceed further", Toast.LENGTH_SHORT)
           .show();
-      Log.d(TAG, "user is offline");
+      Timber.d("user is offline");
     } else {
       ApiInterface apiService = NetworkController.getClient().create(ApiInterface.class);
       Observable<DailyPicture> apod = apiService.fetchAPOD();
@@ -81,11 +80,11 @@ public class MainActivity extends AppCompatActivity
               Toast.makeText(MainActivity.this,
                   "There has been an error on the server. Please try again later.",
                   Toast.LENGTH_SHORT).show();
-              Log.e(TAG, e.toString());
+              Timber.e(e);
             }
 
             @Override public void onNext(DailyPicture dailyPicture) {
-              Log.d("onNext of Subscriber", dailyPicture.title());
+              Timber.d("onNext of Subscriber", dailyPicture.title());
               title.setText(dailyPicture.title());
               desc.setText(dailyPicture.explanation());
               title.setText(dailyPicture.title());
