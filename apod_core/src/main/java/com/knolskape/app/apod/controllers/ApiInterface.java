@@ -1,8 +1,6 @@
 package com.knolskape.app.apod.controllers;
 
 import com.knolskape.app.apod.models.DailyPicture;
-
-import retrofit2.Call;
 import retrofit2.http.GET;
 import rx.Observable;
 
@@ -12,6 +10,5 @@ import rx.Observable;
 
 public interface ApiInterface {
 
-    @GET("planetary/apod")
-    public Observable<DailyPicture> fetchAPOD();
+  @GET("planetary/apod") public Observable<DailyPicture> fetchAPOD();
 }

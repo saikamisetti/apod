@@ -1,37 +1,22 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
 apply plugin: 'com.neenbedankt.android-apt'
 
 android {
   compileSdkVersion 24
   buildToolsVersion "24.0.3"
+
   defaultConfig {
-    applicationId "com.knolskape.app.apod"
-    minSdkVersion 21
+    minSdkVersion 19
     targetSdkVersion 24
     versionCode 1
     versionName "1.0"
+
     testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
   }
   buildTypes {
     release {
       minifyEnabled false
       proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-    }
-  }
-
-  productFlavors {
-    dev {
-      applicationId "com.knolskape.app.apod.dev"
-      manifestPlaceholders = [manifestApplicationId: "${applicationId}"]
-    }
-
-    staging {
-      applicationId "com.knolskape.app.apod.staging"
-      manifestPlaceholders = [manifestApplicationId: "${applicationId}"]
-    }
-
-    product {
-      applicationId "com.knolskape.app.apod"
     }
   }
 }
@@ -41,6 +26,7 @@ dependencies {
   androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
     exclude group: 'com.android.support', module: 'support-annotations'
   })
+  testCompile 'junit:junit:4.12'
   compile 'com.android.support:appcompat-v7:24.2.1'
   compile 'com.squareup.picasso:picasso:2.5.2'
   compile 'com.squareup.retrofit2:retrofit:2.1.0'
@@ -54,7 +40,7 @@ dependencies {
   provided 'com.jakewharton.auto.value:auto-value-annotations:1.2-update1'
   compile 'com.squareup.retrofit2:converter-moshi:2.1.0'
   apt 'com.ryanharter.auto.value:auto-value-moshi:0.4.2'
-//  provided 'com.ryanharter.auto.value:auto-value-moshi-annotations:0.4.2'
+  provided 'com.ryanharter.auto.value:auto-value-moshi-annotations:0.4.2'
   testCompile 'junit:junit:4.12'
   compile 'io.reactivex:rxjava:1.1.6'
   compile 'io.reactivex:rxandroid:1.2.1'
@@ -63,7 +49,4 @@ dependencies {
 
   //timber for logging
   compile 'com.jakewharton.timber:timber:4.3.1'
-
-  //modules
-  compile project(':apod_core')
 }
